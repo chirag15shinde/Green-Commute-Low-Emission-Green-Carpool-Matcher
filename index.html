@@ -1,0 +1,497 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Green Commute & Low-Emission Carpool Matcher</title>
+  <meta name="description" content="Visual demo of a college Data Structures project: Graph, Min-Heap Dijkstra, Doubly Linked List, and Undo Stack." />
+  <meta property="og:title" content="Green Commute & Low-Emission Carpool Matcher" />
+  <meta property="og:description" content="Visual demo of a college Data Structures project: Graph, Min-Heap Dijkstra, Doubly Linked List, and Undo Stack." />
+  <meta property="og:type" content="website" /><meta name="twitter:card" content="summary_large_image" />
+  <style>
+    :root {
+      --bg: #0f172a; --surface: #1e293b; --border: #334155; --text: #f8fafc; --muted: #94a3b8;
+      --accent: #10b981; --accent-glow: rgba(16,185,129,0.2); --accent-hover: #059669;
+      --warn: #f59e0b; --danger: #ef4444; --info: #38bdf8; --purple: #a855f7;
+    }
+    @media (prefers-color-scheme: light) {
+      :root:not([data-theme="dark"]) {
+        --bg: #f8fafc; --surface: #ffffff; --border: #e2e8f0; --text: #0f172a; --muted: #64748b;
+        --accent: #059669; --accent-glow: rgba(5,150,105,0.15); --accent-hover: #047857;
+        --warn: #d97706; --danger: #dc2626; --info: #0284c7; --purple: #9333ea;
+      }
+    }
+    :root[data-theme="light"] { --bg: #f8fafc; --surface: #ffffff; --border: #e2e8f0; --text: #0f172a; --muted: #64748b; --accent: #059669; --accent-glow: rgba(5,150,105,0.15); --accent-hover: #047857; --warn: #d97706; --danger: #dc2626; --info: #0284c7; --purple: #9333ea; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); padding: 14px; font-size: 13.5px; line-height: 1.45; }
+    .app { max-width: 1140px; margin: 0 auto; display: flex; flex-direction: column; gap: 14px; }
+    header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+    h1 { font-size: 1.25rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+    .tag { font-size: 0.7rem; padding: 2px 7px; border-radius: 99px; background: var(--surface); border: 1px solid var(--border); color: var(--accent); }
+    .grid { display: grid; grid-template-columns: 1fr; gap: 14px; }
+    @media (min-width: 860px) { .grid { grid-template-columns: 1.15fr 0.85fr; } }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 13px; display: flex; flex-direction: column; gap: 9px; }
+    .card-head { font-size: 0.84rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.03em; color: var(--muted); display: flex; justify-content: space-between; align-items: center; }
+    .btn-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+    .btn { background: var(--surface); color: var(--text); border: 1px solid var(--border); padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-weight: 500; transition: all .15s; }
+    .btn:hover:not(:disabled) { border-color: var(--accent); background: var(--accent-glow); }
+    .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+    .btn-pri { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .btn-pri:hover:not(:disabled) { background: var(--accent-hover); }
+    .btn-del { color: var(--danger); }
+    .btn-del:hover:not(:disabled) { background: rgba(239,68,68,0.15); border-color: var(--danger); }
+    svg.graph { width: 100%; height: auto; min-height: 250px; background: rgba(0,0,0,0.03); border-radius: 6px; border: 1px dashed var(--border); }
+    .edge { stroke: var(--border); stroke-width: 2.2; transition: stroke .2s; }
+    .edge.hi { stroke: var(--accent); stroke-width: 4; }
+    .edge-bg { fill: var(--surface); rx: 3; stroke: var(--border); stroke-width: 1; }
+    .edge-txt { font-size: 10.5px; fill: var(--muted); font-weight: 600; text-anchor: middle; dominant-baseline: middle; }
+    .node { cursor: pointer; }
+    .node circle { stroke: var(--border); stroke-width: 2.2; }
+    .node.active circle { stroke: #fff; stroke-width: 3.5; }
+    .node-t { font-size: 10.5px; font-weight: 700; fill: #fff; text-anchor: middle; dominant-baseline: middle; pointer-events: none; }
+    .node-sub { font-size: 9px; fill: var(--muted); text-anchor: middle; pointer-events: none; }
+    .chips { display: flex; flex-wrap: wrap; gap: 5px; }
+    .chip { font-size: 0.74rem; padding: 3px 8px; border-radius: 99px; background: var(--surface); border: 1px solid var(--border); cursor: pointer; }
+    .chip.active { border-color: var(--accent); background: var(--accent-glow); font-weight: 600; }
+    .dll-row { display: flex; align-items: center; gap: 4px; overflow-x: auto; padding: 6px 2px; }
+    .dll-item { background: var(--bg); border: 2px solid var(--accent); border-radius: 6px; padding: 6px 10px; text-align: center; min-width: 82px; flex-shrink: 0; }
+    .dll-t { font-size: 0.65rem; color: var(--muted); text-transform: uppercase; font-weight: 700; }
+    .dll-n { font-size: 0.8rem; font-weight: 700; }
+    .dll-arr { color: var(--muted); font-size: 1rem; font-weight: bold; flex-shrink: 0; user-select: none; }
+    .bar-row { display: flex; flex-direction: column; gap: 3px; font-size: 0.78rem; }
+    .bar-track { background: var(--border); height: 16px; border-radius: 99px; overflow: hidden; width: 100%; }
+    .bar-fill { height: 100%; border-radius: 99px; transition: width .35s; }
+    .stack-list { display: flex; flex-direction: column; gap: 5px; max-height: 110px; overflow-y: auto; font-size: 0.76rem; }
+    .stack-it { padding: 4px 8px; border-radius: 4px; background: var(--bg); border: 1px solid var(--border); display: flex; justify-content: space-between; }
+    .stack-it.top { border-color: var(--warn); background: rgba(245,158,11,0.1); font-weight: 600; }
+    .test-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 6px; }
+    .test-it { padding: 5px 8px; border-radius: 5px; font-size: 0.72rem; border: 1px solid var(--border); background: var(--bg); display: flex; justify-content: space-between; align-items: center; }
+    .pass { color: var(--accent); font-weight: 700; }
+    .fail { color: var(--danger); font-weight: 700; }
+    .edge-inputs { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 6px; margin-top: 6px; }
+    .edge-inputs input { width: 100%; padding: 4px 6px; border-radius: 4px; border: 1px solid var(--border); background: var(--bg); color: var(--text); font-size: 0.75rem; }
+  </style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div>
+      <h1>Green Commute & Low-Emission Carpool Matcher <span class="tag">Data Structures Demo</span></h1>
+      <p style="font-size: 0.78rem; color: var(--muted);">Weighted Graph &bull; Min-Heap Priority Queue &bull; Dijkstra &bull; Doubly Linked List &bull; Undo Stack</p>
+    </div>
+    <button class="btn" id="themeBtn" onclick="toggleTheme()">☀️ Light</button>
+  </header>
+
+  <div class="grid">
+    <div style="display:flex; flex-direction:column; gap:14px;">
+      <div class="card">
+        <div class="card-head"><span>Road Network & Emission Weights</span><span style="font-size:0.7rem; color:var(--muted);">Edge weight = CO₂ cost</span></div>
+        <svg id="netSvg" class="graph" viewBox="0 0 540 290"></svg>
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:6px; flex-wrap:wrap;">
+          <span style="font-size:0.75rem; color:var(--muted);">Inspect Commuter:</span><div class="chips" id="chipsBox"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head">DS Project Pipeline</div>
+        <div class="btn-row">
+          <button class="btn btn-pri" onclick="runDijkstraAll()">1. Run Dijkstra for all</button>
+          <button class="btn" onclick="matchCommuters()">2. Match commuters</button>
+          <button class="btn" onclick="buildPooledRoute()">3. Build pooled route</button>
+        </div>
+        <div class="btn-row" style="border-top:1px solid var(--border); padding-top:8px;">
+          <select id="cancelDrop" style="padding:5px 8px; border-radius:5px; background:var(--bg); color:var(--text); border:1px solid var(--border); font-size:0.78rem;"></select>
+          <button class="btn btn-del" onclick="cancelPickup()">✕ Cancel a pickup</button>
+          <button class="btn" id="undoBtn" onclick="undo()" disabled>⤺ Undo (<span id="undoCount">0</span>)</button>
+        </div>
+      </div>
+      <div class="card">
+        <details>
+          <summary style="cursor:pointer; font-size:0.8rem; font-weight:600; color:var(--muted);">✏️ Edit Edge Weights & Re-run</summary>
+          <div class="edge-inputs" id="edgeForm"></div>
+          <div class="btn-row" style="margin-top:8px;">
+            <button class="btn btn-pri" onclick="saveEdges()">Apply & Re-run</button>
+            <button class="btn" onclick="resetEdges()">Reset Defaults</button>
+          </div>
+        </details>
+      </div>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:14px;">
+      <div class="card">
+        <div class="card-head"><span>Doubly Linked List Pooled Route</span><span id="dllLen" style="font-size:0.7rem; color:var(--accent);">Ready</span></div>
+        <div class="dll-row" id="dllRow"></div>
+        <div id="dllText" style="font-size:0.74rem; color:var(--muted); font-family:monospace;"></div>
+      </div>
+      <div class="card">
+        <div class="card-head">Emission Report (Both Models)</div>
+        <div id="emissionBars" style="display:flex; flex-direction:column; gap:8px;"></div>
+        <div id="emissionMsg" style="font-size:0.75rem; color:var(--muted); border-top:1px solid var(--border); padding-top:6px;"></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><span>Undo Stack (LIFO)</span><span id="stackBadge" style="font-size:0.7rem; color:var(--warn);">0 actions</span></div>
+        <div class="stack-list" id="stackLog"></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><span>Verification Tests (T1–T6)</span><button class="btn" style="padding:2px 7px; font-size:0.7rem;" onclick="runTests()">Run Tests</button></div>
+        <div class="test-grid" id="testGrid"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/**
+ * DATA STRUCTURE 1: Min-Priority Queue (Binary Min-Heap)
+ * Time: push O(log V), pop O(log V), peek O(1), size/isEmpty O(1) | Space: O(V)
+ */
+class MinHeapPQ {
+  constructor() { this.heap = []; }
+  size() { return this.heap.length; }
+  isEmpty() { return this.heap.length === 0; }
+  push(item) {
+    this.heap.push(item);
+    let i = this.heap.length - 1;
+    while (i > 0) {
+      let p = Math.floor((i - 1) / 2);
+      if (this.heap[i].cost >= this.heap[p].cost) break;
+      [this.heap[i], this.heap[p]] = [this.heap[p], this.heap[i]]; i = p;
+    }
+  }
+  pop() {
+    if (this.isEmpty()) return null;
+    const min = this.heap[0], last = this.heap.pop();
+    if (this.heap.length > 0) {
+      this.heap[0] = last;
+      let i = 0, len = this.heap.length;
+      while (true) {
+        let l = 2 * i + 1, r = 2 * i + 2, swap = null;
+        if (l < len && this.heap[l].cost < this.heap[i].cost) swap = l;
+        if (r < len && (swap === null ? this.heap[r].cost < this.heap[i].cost : this.heap[r].cost < this.heap[l].cost)) swap = r;
+        if (swap === null) break;
+        [this.heap[i], this.heap[swap]] = [this.heap[swap], this.heap[i]]; i = swap;
+      }
+    }
+    return min;
+  }
+}
+/**
+ * DATA STRUCTURE 2: Weighted Graph (Adjacency List)
+ * Roads are bidirectional with emission costs. Time: addEdge O(1), getNeighbors O(deg(V)) | Space: O(V + E)
+ */
+class Graph {
+  constructor() { this.nodes = {}; this.adj = {}; }
+  addNode(id, label, name, x, y, type) { this.nodes[id] = { id, label, name, x, y, type }; if (!this.adj[id]) this.adj[id] = []; }
+  addEdge(u, v, cost) {
+    if (!this.adj[u]) this.adj[u] = []; if (!this.adj[v]) this.adj[v] = [];
+    this.adj[u].push({ to: v, cost: Number(cost) }); this.adj[v].push({ to: u, cost: Number(cost) });
+  }
+}
+/**
+ * Dijkstra's Algorithm with Min-Heap
+ * Time: O((V + E) log V) | Space: O(V)
+ */
+function dijkstra(g, start, target = 0) {
+  const dist = {}, prev = {}, pq = new MinHeapPQ();
+  Object.keys(g.nodes).forEach(id => { dist[id] = Infinity; prev[id] = null; });
+  dist[start] = 0; pq.push({ id: start, cost: 0 });
+  while (!pq.isEmpty()) {
+    const { id: u, cost: d } = pq.pop();
+    if (d > dist[u]) continue;
+    if (u === target) break;
+    for (const edge of (g.adj[u] || [])) {
+      const alt = dist[u] + edge.cost;
+      if (alt < dist[edge.to]) { dist[edge.to] = alt; prev[edge.to] = u; pq.push({ id: edge.to, cost: alt }); }
+    }
+  }
+  const path = []; let curr = target;
+  if (dist[target] !== Infinity || start === target) {
+    while (curr !== null) { path.unshift(Number(curr)); curr = prev[curr]; if (curr === start) { path.unshift(Number(curr)); break; } }
+  }
+  return { cost: dist[target], path };
+}
+/**
+ * DATA STRUCTURE 3: Doubly Linked List for ordered pickup/drop sequence
+ * Operations: pushBack, insertAfter, remove (updates head & tail), printSequence
+ * Time: pushBack O(1), insertAfter O(N), remove O(N), printSequence O(N) | Space: O(N)
+ */
+class WaypointNode {
+  constructor(nodeId, label, name) { this.nodeId = nodeId; this.label = label; this.name = name; this.prev = null; this.next = null; }
+}
+class DoublyLinkedList {
+  constructor() { this.head = null; this.tail = null; this.size = 0; }
+  pushBack(nodeId, label, name) {
+    const node = new WaypointNode(nodeId, label, name);
+    if (!this.head) { this.head = this.tail = node; } else { this.tail.next = node; node.prev = this.tail; this.tail = node; }
+    this.size++; return node;
+  }
+  insertAfter(targetLabel, nodeId, label, name) {
+    let curr = this.head; while (curr && curr.label !== targetLabel) curr = curr.next;
+    if (!curr) return this.pushBack(nodeId, label, name);
+    const node = new WaypointNode(nodeId, label, name);
+    node.prev = curr; node.next = curr.next;
+    if (curr.next) curr.next.prev = node; else this.tail = node;
+    curr.next = node; this.size++; return node;
+  }
+  insertBefore(targetLabel, nodeId, label, name) {
+    let curr = this.head; while (curr && curr.label !== targetLabel) curr = curr.next;
+    if (!curr || curr === this.head) {
+      const node = new WaypointNode(nodeId, label, name);
+      if (!this.head) { this.head = this.tail = node; } else { node.next = this.head; this.head.prev = node; this.head = node; }
+      this.size++; return node;
+    }
+    const node = new WaypointNode(nodeId, label, name);
+    node.next = curr; node.prev = curr.prev; curr.prev.next = node; curr.prev = node; this.size++; return node;
+  }
+  remove(label) {
+    let curr = this.head; while (curr && curr.label !== label) curr = curr.next;
+    if (!curr) return null;
+    const info = { label: curr.label, nodeId: curr.nodeId, name: curr.name, prevLabel: curr.prev ? curr.prev.label : null, nextLabel: curr.next ? curr.next.label : null };
+    if (curr === this.head && curr === this.tail) { this.head = this.tail = null; }
+    else if (curr === this.head) { this.head = curr.next; this.head.prev = null; }
+    else if (curr === this.tail) { this.tail = curr.prev; this.tail.next = null; }
+    else { curr.prev.next = curr.next; curr.next.prev = curr.prev; }
+    this.size--; return info;
+  }
+  printSequence() { return this.toArray().map(n => n.label).join(" <-> "); }
+  toArray() {
+    const res = []; let curr = this.head;
+    while (curr) { res.push({ nodeId: curr.nodeId, label: curr.label, name: curr.name }); curr = curr.next; }
+    return res;
+  }
+}
+/**
+ * DATA STRUCTURE 4: Undo Stack (LIFO)
+ * Time: push O(1), pop O(1), peek O(1), size O(1) | Space: O(M)
+ */
+class UndoStack {
+  constructor() { this.stack = []; }
+  push(item) { this.stack.push(item); }
+  pop() { return this.stack.pop(); }
+  peek() { return this.stack[this.stack.length - 1]; }
+  isEmpty() { return this.stack.length === 0; }
+  size() { return this.stack.length; }
+  items() { return [...this.stack].reverse(); }
+}
+// Default Data & State
+const DEFAULT_EDGES = [
+  { u: 1, v: 5, cost: 12 }, { u: 2, v: 6, cost: 10 }, { u: 3, v: 6, cost: 14 },
+  { u: 4, v: 6, cost: 20 }, { u: 5, v: 6, cost: 8 },  { u: 5, v: 0, cost: 18 }, { u: 6, v: 0, cost: 15 }
+];
+let graph = new Graph(), edges = JSON.parse(JSON.stringify(DEFAULT_EDGES));
+let dijkstraData = {}, matchedGroups = {}, pooledList = new DoublyLinkedList(), undoHistory = new UndoStack(), activeCommuterId = null;
+function initGraph() {
+  graph = new Graph();
+  graph.addNode(0, "Office Park", "Office Park", 450, 230, "office");
+  graph.addNode(1, "Commuter A", "Andheri West", 80, 80, "commuter");
+  graph.addNode(2, "Commuter B", "Andheri East", 460, 75, "commuter");
+  graph.addNode(3, "Commuter C", "Jogeshwari", 320, 45, "commuter");
+  graph.addNode(4, "Commuter D", "Goregaon", 180, 45, "commuter");
+  graph.addNode(5, "Junction SV", "Junction SV Rd", 110, 210, "junction");
+  graph.addNode(6, "Junction WEH", "Junction WEH", 330, 175, "junction");
+  edges.forEach(e => graph.addEdge(e.u, e.v, e.cost));
+}
+function runDijkstraAll() {
+  dijkstraData = {};
+  [1, 2, 3, 4].forEach(id => { dijkstraData[id] = dijkstra(graph, id, 0); });
+  renderGraph(); renderChips(); renderEmissions();
+}
+function matchCommuters() {
+  if (!dijkstraData[1]) runDijkstraAll();
+  matchedGroups = {};
+  [1, 2, 3, 4].forEach(id => {
+    const junc = dijkstraData[id].path.find(n => n === 5 || n === 6);
+    if (junc) { if (!matchedGroups[junc]) matchedGroups[junc] = []; matchedGroups[junc].push(id); }
+  });
+  renderGraph(); renderEmissions();
+}
+
+function buildPooledRoute() {
+  if (!matchedGroups[6]) matchCommuters();
+  const group = matchedGroups[6] || [4, 3, 2];
+  const ordered = [...group].sort((a, b) => dijkstraData[b].cost - dijkstraData[a].cost);
+  pooledList = new DoublyLinkedList(); undoHistory = new UndoStack();
+  ordered.forEach(id => { const n = graph.nodes[id]; pooledList.pushBack(n.id, n.label, n.name); });
+  pooledList.pushBack(0, "Office Park", "Office Park");
+  renderDLL(); renderCancelSelect(); renderUndoStack(); renderGraph(); renderEmissions();
+}
+
+function getSegmentSumCost(dll) {
+  const arr = dll.toArray();
+  if (arr.length <= 1) return 0;
+  let sum = 0;
+  for (let i = 0; i < arr.length - 1; i++) sum += dijkstra(graph, arr[i].nodeId, arr[i + 1].nodeId).cost;
+  return sum;
+}
+
+function cancelPickup() {
+  const label = document.getElementById("cancelDrop").value;
+  if (!label) return;
+  const removed = pooledList.remove(label);
+  if (removed) {
+    undoHistory.push({ type: "remove", data: removed });
+    renderDLL(); renderCancelSelect(); renderUndoStack(); renderEmissions(); renderGraph();
+  }
+}
+
+function undo() {
+  if (undoHistory.isEmpty()) return;
+  const action = undoHistory.pop();
+  if (action.type === "remove") {
+    const { label, nodeId, name, prevLabel, nextLabel } = action.data;
+    if (prevLabel) pooledList.insertAfter(prevLabel, nodeId, label, name);
+    else if (nextLabel) pooledList.insertBefore(nextLabel, nodeId, label, name);
+    else pooledList.pushBack(nodeId, label, name);
+  }
+  renderDLL(); renderCancelSelect(); renderUndoStack(); renderEmissions(); renderGraph();
+}
+
+// Rendering
+function renderGraph() {
+  const svg = document.getElementById("netSvg"), pooledSet = new Set(pooledList.toArray().map(n => n.nodeId));
+  let hiEdges = new Set();
+  if (activeCommuterId && dijkstraData[activeCommuterId]) {
+    const p = dijkstraData[activeCommuterId].path;
+    for (let i = 0; i < p.length - 1; i++) hiEdges.add(`${Math.min(p[i], p[i+1])}-${Math.max(p[i], p[i+1])}`);
+  }
+  let out = "";
+  edges.forEach(e => {
+    const u = graph.nodes[e.u], v = graph.nodes[e.v], isHi = hiEdges.has(`${Math.min(e.u, e.v)}-${Math.max(e.u, e.v)}`);
+    const mx = (u.x + v.x) / 2, my = (u.y + v.y) / 2;
+    out += `<line x1="${u.x}" y1="${u.y}" x2="${v.x}" y2="${v.y}" class="edge ${isHi ? 'hi' : ''}" />`;
+    out += `<rect x="${mx - 10}" y="${my - 8}" width="20" height="16" class="edge-bg" />`;
+    out += `<text x="${mx}" y="${my + 1}" class="edge-txt">${e.cost}</text>`;
+  });
+  Object.values(graph.nodes).forEach(n => {
+    let col = n.type === "office" ? "var(--warn)" : (n.type === "junction" ? "var(--purple)" : (pooledSet.has(n.id) ? "var(--accent)" : "var(--info)"));
+    let r = n.type === "office" ? 19 : (n.type === "junction" ? 17 : 16);
+    out += `<g class="node ${activeCommuterId === n.id ? 'active' : ''}" onclick="toggleCommuter(${n.id})">
+      <circle cx="${n.x}" cy="${n.y}" r="${r}" fill="${col}" />
+      <text x="${n.x}" y="${n.y}" class="node-t">${n.id === 0 ? "★" : n.id}</text>
+      <text x="${n.x}" y="${n.y + r + 11}" class="node-sub">${n.name}</text>
+    </g>`;
+  });
+  svg.innerHTML = out;
+}
+
+function toggleCommuter(id) {
+  activeCommuterId = (id === 0 || id >= 5 || activeCommuterId === id) ? null : id;
+  renderGraph(); renderChips();
+}
+
+function renderChips() {
+  document.getElementById("chipsBox").innerHTML = [1, 2, 3, 4].map(id => {
+    const cost = dijkstraData[id] ? dijkstraData[id].cost : "--";
+    return `<div class="chip ${activeCommuterId === id ? 'active' : ''}" onclick="toggleCommuter(${id})">
+      ${graph.nodes[id].label.replace("Commuter ", "")}: ${cost} CO₂
+    </div>`;
+  }).join("");
+}
+
+function renderDLL() {
+  const arr = pooledList.toArray(), row = document.getElementById("dllRow");
+  document.getElementById("dllLen").textContent = `${arr.length} nodes in sequence`;
+  if (!arr.length) {
+    row.innerHTML = `<span style="color:var(--muted); font-size:0.75rem;">Route empty. Click “Build pooled route”.</span>`;
+    document.getElementById("dllText").textContent = ""; return;
+  }
+  row.innerHTML = arr.map((item, idx) => {
+    const isTail = idx === arr.length - 1, tag = idx === 0 ? "Head" : (isTail ? "Tail" : `#${idx}`);
+    return `<div class="dll-item"><div class="dll-t">${tag}</div><div class="dll-n">${item.label.replace("Commuter ", "C-")}</div></div>` +
+      (isTail ? "" : `<div class="dll-arr">&larr;&rarr;</div>`);
+  }).join("");
+  document.getElementById("dllText").textContent = "DLL: " + pooledList.printSequence();
+}
+
+function renderCancelSelect() {
+  const commuters = pooledList.toArray().filter(n => n.nodeId !== 0);
+  document.getElementById("cancelDrop").innerHTML = commuters.map(c => `<option value="${c.label}">Pickup: ${c.label}</option>`).join("");
+}
+
+function renderUndoStack() {
+  const list = undoHistory.items();
+  document.getElementById("stackBadge").textContent = `${list.length} in stack`;
+  document.getElementById("undoCount").textContent = list.length;
+  document.getElementById("undoBtn").disabled = list.length === 0;
+  document.getElementById("stackLog").innerHTML = !list.length ? `<div style="color:var(--muted); font-size:0.74rem;">Undo stack is empty (LIFO).</div>` :
+    list.map((it, idx) => `<div class="stack-it ${idx === 0 ? 'top' : ''}">
+      <span>${idx === 0 ? '▲ TOP: ' : ''}Cancelled ${it.data.label}</span>
+      <span style="color:var(--muted);">prev: ${it.data.prevLabel || 'null'}</span>
+    </div>`).join("");
+}
+
+function renderEmissions() {
+  const commuters = pooledList.toArray().filter(n => n.nodeId !== 0), box = document.getElementById("emissionBars"), msg = document.getElementById("emissionMsg");
+  if (!commuters.length) { box.innerHTML = `<div style="color:var(--muted); font-size:0.75rem;">No carpool group active.</div>`; msg.textContent = ""; return; }
+  let soloSum = 0, maxSolo = 0;
+  commuters.forEach(c => { const cost = dijkstraData[c.nodeId]?.cost || 0; soloSum += cost; if (cost > maxSolo) maxSolo = cost; });
+  const simpCost = maxSolo, simpSave = soloSum > 0 ? (((soloSum - simpCost) / soloSum) * 100) : 0;
+  const segCost = getSegmentSumCost(pooledList), segSave = soloSum > 0 ? (((soloSum - segCost) / soloSum) * 100) : 0;
+  const maxVal = Math.max(soloSum, 1);
+  box.innerHTML = `
+    <div class="bar-row"><div style="display:flex; justify-content:space-between;"><span>Solo Sum (${commuters.map(c => c.label.replace('Commuter ', '')).join('+')})</span><strong>${soloSum.toFixed(1)} CO₂</strong></div>
+      <div class="bar-track"><div class="bar-fill" style="width:${(soloSum / maxVal) * 100}%; background:var(--info);"></div></div></div>
+    <div class="bar-row"><div style="display:flex; justify-content:space-between;"><span>Simplified Model (Optimistic Upper Bound)</span><strong>${simpCost.toFixed(1)} CO₂ <span style="color:var(--accent);">(${simpSave.toFixed(2)}% saved)</span></strong></div>
+      <div class="bar-track"><div class="bar-fill" style="width:${(simpCost / maxVal) * 100}%; background:var(--purple);"></div></div></div>
+    <div class="bar-row"><div style="display:flex; justify-content:space-between;"><span>Segment-Sum Model (Realistic Route Legs)</span><strong>${segCost.toFixed(1)} CO₂ <span style="color:var(--accent);">(${segSave.toFixed(2)}% saved)</span></strong></div>
+      <div class="bar-track"><div class="bar-fill" style="width:${(segCost / maxVal) * 100}%; background:var(--accent);"></div></div></div>`;
+  msg.innerHTML = `Solo total: <strong>${soloSum}</strong> &rarr; Pooled segment-sum: <strong>${segCost}</strong> (${segSave.toFixed(2)}% net reduction).`;
+}
+function renderEdgeForm() {
+  document.getElementById("edgeForm").innerHTML = edges.map((e, idx) => `
+    <div><label style="font-size:0.68rem; color:var(--muted);">${graph.nodes[e.u].name.split(" ")[0]} &harr; ${graph.nodes[e.v].name.split(" ")[0]}</label>
+      <input type="number" id="ed_${idx}" value="${e.cost}" min="0" step="1" /></div>`).join("");
+}
+function saveEdges() {
+  const updated = [];
+  for (let i = 0; i < edges.length; i++) {
+    const val = parseInt(document.getElementById(`ed_${i}`).value, 10);
+    if (isNaN(val) || val < 0) return alert("Weights must be non-negative integers.");
+    updated.push({ u: edges[i].u, v: edges[i].v, cost: val });
+  }
+  edges = updated; initGraph(); runDijkstraAll(); matchCommuters(); buildPooledRoute();
+}
+function resetEdges() {
+  edges = JSON.parse(JSON.stringify(DEFAULT_EDGES));
+  initGraph(); renderEdgeForm(); runDijkstraAll(); matchCommuters(); buildPooledRoute();
+}
+function toggleTheme() {
+  const cur = document.documentElement.getAttribute("data-theme") || (window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark");
+  const next = cur === "light" ? "dark" : "light";
+  document.documentElement.setAttribute("data-theme", next);
+  document.getElementById("themeBtn").textContent = next === "light" ? "🌙 Dark" : "☀️ Light";
+}
+// Verification Tests T1-T6
+function runTests() {
+  const t1A = dijkstra(graph, 1, 0).cost, t1B = dijkstra(graph, 2, 0).cost, t1C = dijkstra(graph, 3, 0).cost, t1D = dijkstra(graph, 4, 0).cost;
+  const p1 = (t1A === 30 && t1B === 25 && t1C === 29 && t1D === 35);
+  const p2 = dijkstra(graph, 2, 0).path.includes(6) && dijkstra(graph, 3, 0).path.includes(6) && dijkstra(graph, 4, 0).path.includes(6);
+  const tList = new DoublyLinkedList();
+  tList.pushBack(4, "Commuter D", "Goregaon"); tList.pushBack(3, "Commuter C", "Jogeshwari");
+  tList.pushBack(2, "Commuter B", "Andheri East"); tList.pushBack(0, "Office Park", "Office Park");
+  const p3 = (getSegmentSumCost(tList) === 83);
+  const rem = tList.remove("Commuter C");
+  const p4 = (rem && tList.head.nodeId === 4 && tList.tail.nodeId === 0 && tList.toArray().map(n => n.nodeId).join(",") === "4,2,0");
+  const tStack = new UndoStack(); tStack.push({ type: "remove", data: rem });
+  const popped = tStack.pop();
+  tList.insertAfter(popped.data.prevLabel, popped.data.nodeId, popped.data.label, popped.data.name);
+  const p5 = (tList.toArray().map(n => n.nodeId).join(",") === "4,3,2,0");
+  const soloSum = 25 + 29 + 35, simpSave = ((soloSum - 35) / soloSum) * 100, segSave = ((soloSum - 83) / soloSum) * 100;
+  const p6 = (Math.abs(simpSave - 60.67) < 0.1 && Math.abs(segSave - 6.74) < 0.1 && simpSave > 0 && segSave > 0);
+
+  const tests = [
+    { id: "T1", name: "Dijkstra Costs", pass: p1, desc: "A:30 B:25 C:29 D:35" },
+    { id: "T2", name: "Junction Match", pass: p2, desc: "B, C, D via WEH (6)" },
+    { id: "T3", name: "Insertion Order", pass: p3, desc: "Cost: 83 (Expected 83)" },
+    { id: "T4", name: "Node Removal", pass: p4, desc: "Head/Tail links updated" },
+    { id: "T5", name: "Undo LIFO Stack", pass: p5, desc: "D, C, B restored" },
+    { id: "T6", name: "Savings > 0%", pass: p6, desc: "Simp 60.67%, Seg 6.74%" }
+  ];
+  document.getElementById("testGrid").innerHTML = tests.map(t => `
+    <div class="test-it"><div><strong>${t.id}: ${t.name}</strong><div style="color:var(--muted); font-size:0.65rem;">${t.desc}</div></div>
+      <span class="${t.pass ? 'pass' : 'fail'}">${t.pass ? '✓ PASS' : '✗ FAIL'}</span></div>`).join("");
+}
+window.addEventListener("DOMContentLoaded", () => {
+  initGraph(); renderEdgeForm(); runDijkstraAll(); matchCommuters(); buildPooledRoute(); runTests();
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+{
+  "name": "Green Commute & Low-Emission Carpool Matcher",
+  "description": "Visual demo of a college Data Structures project featuring Graph algorithms, Dijkstra with Min-Heap, Doubly Linked List, and Undo Stack for low-emission carpool matching.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
